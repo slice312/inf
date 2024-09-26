@@ -75,6 +75,8 @@ jobs:
           echo $AWS_ACCESS_KEY_ID
           echo $AWS_SECRET_ACCESS_KEY
 
+          aws sts get-caller-identity
+
           terraform init
           terraform plan -var="ami_id=ami-0d02f4dc282064d6a"
           terraform apply -var="ami_id=ami-0d02f4dc282064d6a" -auto-approve
