@@ -72,7 +72,7 @@ jobs:
         run: |
           echo "AMI_ID: ${{ needs.packer_build.outputs.ami_id }}"
           cd ${{ github.event.repository.name }}/terraform
-          echo $AWS_ACCESS_KEY_ID
+          echo "*$AWS_ACCESS_KEY_ID*"
           echo $AWS_SECRET_ACCESS_KEY
 
           aws sts get-caller-identity --region=us-east-1
