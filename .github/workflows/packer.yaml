@@ -75,7 +75,7 @@ jobs:
           echo $AWS_ACCESS_KEY_ID
           echo $AWS_SECRET_ACCESS_KEY
 
-          aws sts get-caller-identity
+          aws sts get-caller-identity --region=us-east-1
 
           terraform init
           terraform plan -var="ami_id=ami-0d02f4dc282064d6a"
