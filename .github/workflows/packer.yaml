@@ -42,17 +42,18 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
           AMI_NAME: default_webserver
-          AWS_REGION: us-east-1
         run: |
-          image=$(aws ec2 describe-images --owners self --region=$AWS_REGION \
+          jq --version
+          image_id=$(aws ec2 describe-images --owners self \
             --filters Name=name,Values=$AMI_NAME \
             --query 'Images[*].ImageId' \
             --output text)
-          if [ -z $image]; then
-            echo "No AMIs found."
+          if [ -n $image_id]; then
+            aws ec2 deregister-image --image-id $image_id
           else
-            echo "AMIs found: $image"
+            echo "No AMIs found."
           fi
 
           # cd ${{ github.event.repository.name }}
