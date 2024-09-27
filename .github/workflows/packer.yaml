@@ -45,7 +45,6 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
           AMI_NAME: default_webserver
         run: |
-          jq --version
           image_id=$(aws ec2 describe-images --owners self \
             --filters Name=name,Values=$AMI_NAME \
             --query 'Images[*].ImageId' \
