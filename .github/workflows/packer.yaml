@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feature/packer-pipeline
 
 jobs:
   packer_build:
@@ -45,24 +46,31 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
           AMI_NAME: default_webserver
         run: |
-          image_id=$(aws ec2 describe-images --owners self \
+          image_info=$(aws ec2 describe-images --owners self  \
             --filters Name=name,Values=$AMI_NAME \
-            --query 'Images[*].ImageId' \
-            --output text)
-          if [ -n $image_id]; then
+            --query 'Images[0].{ImageId: ImageId, SnapshotId: BlockDeviceMappings[0].Ebs.SnapshotId}')
+
+          if [ "$image_info" != "null" ]; then
+            image_id=$(echo $image_info | jq -r '.ImageId')
+            snapshot_id=$(echo $image_info| jq -r '.SnapshotId')
+
             aws ec2 deregister-image --image-id $image_id
-          else
-            echo "No AMIs found."
+            if [ $? -eq 0 ]; then
+              echo "image $image_id deregistered"
+            fi
+            aws ec2 delete-snapshot --snapshot-id $snapshot_id
+            if [ $? -eq 0 ]; then
+              echo "snapshot $snapshot_id deleted"
+            fi
           fi
 
-          # cd ${{ github.event.repository.name }}
-          # cd packer
-          # packer init .
-          # packer build .
-          # cat manifest.json
-          # ami_id_val=$(jq -r '(.last_run_uuid as $uid | .builds[] | select(.packer_run_uuid == $uid) | .artifact_id | split(":")[1])' manifest.json)
-          # echo "kek *$ami_id_val*"
-          # echo "ami_id=${ami_id_val}" >> "$GITHUB_OUTPUT"
+          cd ${{ github.event.repository.name }}
+          cd packer
+          packer init .
+          packer build -var "ami_name=$AMI_NAME" .
+          cat manifest.json
+          ami_id_val=$(jq -r '(.last_run_uuid as $uid | .builds[] | select(.packer_run_uuid == $uid) | .artifact_id | split(":")[1])' manifest.json)
+          echo "ami_id=${ami_id_val}" >> "$GITHUB_OUTPUT"
 
   terraform_deploy:
     name: Terraform Deploy
@@ -90,5 +98,5 @@ jobs:
 
           terraform init
           terraform plan -var="ami_id=ami-0d02f4dc282064d6a"
-          terraform apply -var="ami_id=ami-0d02f4dc282064d6a" -auto-approve
+          # terraform apply -var="ami_id=ami-0d02f4dc282064d6a" -auto-approve
 
