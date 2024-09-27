@@ -4,6 +4,6 @@ variable "vpc_id" {
 }
 
 variable "jumpbox_public_ip" {
-  description = "ID of the VPC"
+  description = "JumpBox Public IP"
   type        = string
 }

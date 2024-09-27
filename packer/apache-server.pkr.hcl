@@ -9,7 +9,7 @@ packer {
 
 source "amazon-ebs" "default_webserver" {
   region        = "us-east-1"
-  ami_name      = "default_webserver"
+  ami_name      = "default_webserver"  # TODO: versioning
   instance_type = "t2.micro"
   ssh_username  = "ec2-user"
 
