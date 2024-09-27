@@ -46,16 +46,16 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
           AMI_NAME: default_webserver
         run: |
-          image_id=$(aws ec2 describe-images --owners self --region=$AWS_DEFAULT_REGION \
+          aws ec2 describe-images --owners self  \
             --filters Name=name,Values=$AMI_NAME \
             --query 'Images[*].ImageId' \
-            --output text)
-          if [ -n $image_id]; then
-            echo "found."
-           # aws ec2 deregister-image --image-id $image_id
-          else
-            echo "No AMIs found."
-          fi
+            --output text
+          # if [ -n $image_id]; then
+          #   echo "found."
+          #  # aws ec2 deregister-image --image-id $image_id
+          # else
+          #   echo "No AMIs found."
+          # fi
 
           # cd ${{ github.event.repository.name }}
           # cd packer
