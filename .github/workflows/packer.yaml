@@ -98,5 +98,5 @@ jobs:
 
           terraform init
           terraform plan -var="ami_id=ami-0d02f4dc282064d6a"
-          terraform apply -var="ami_id=ami-0d02f4dc282064d6a" -auto-approve
+          # terraform apply -var="ami_id=ami-0d02f4dc282064d6a" -auto-approve
 
