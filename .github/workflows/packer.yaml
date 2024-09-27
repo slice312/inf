@@ -34,22 +34,35 @@ jobs:
       #     fi
 
       #TODO: добавить возможность пропуска, хз вручную как то, апровы или что еще, придумать короче
+        # wokrlfow dipstach с входными параметрами
 
-      # - name: build
-      #   id: build
-      #   # if: steps.changes.outcome != 'success'
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #   run: |
-      #     cd ${{ github.event.repository.name }}
-      #     cd packer
-      #     packer init .
-      #     packer build .
-      #     cat manifest.json
-      #     ami_id_val=$(jq -r '(.last_run_uuid as $uid | .builds[] | select(.packer_run_uuid == $uid) | .artifact_id | split(":")[1])' manifest.json)
-      #     echo "kek *$ami_id_val*"
-      #     echo "ami_id=${ami_id_val}" >> "$GITHUB_OUTPUT"
+      - name: build
+        id: build
+        # if: steps.changes.outcome != 'success'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AMI_NAME: default_webserver
+          AWS_REGION: us-east-1
+        run: |
+          image=$(aws ec2 describe-images --owners self --region=$AWS_REGION \
+            --filters Name=name,Values=$AMI_NAME \
+            --query 'Images[*].ImageId' \
+            --output text)
+          if [ -z $image]; then
+            echo "No AMIs found."
+          else
+            echo "AMIs found: $image"
+          fi
+
+          # cd ${{ github.event.repository.name }}
+          # cd packer
+          # packer init .
+          # packer build .
+          # cat manifest.json
+          # ami_id_val=$(jq -r '(.last_run_uuid as $uid | .builds[] | select(.packer_run_uuid == $uid) | .artifact_id | split(":")[1])' manifest.json)
+          # echo "kek *$ami_id_val*"
+          # echo "ami_id=${ami_id_val}" >> "$GITHUB_OUTPUT"
 
   terraform_deploy:
     name: Terraform Deploy
