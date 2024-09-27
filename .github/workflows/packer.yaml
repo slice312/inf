@@ -51,7 +51,8 @@ jobs:
             --query 'Images[*].ImageId' \
             --output text)
           if [ -n $image_id]; then
-            aws ec2 deregister-image --image-id $image_id
+            echo "found."
+           # aws ec2 deregister-image --image-id $image_id
           else
             echo "No AMIs found."
           fi
