@@ -43,28 +43,35 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          # AWS_DEFAULT_REGION: us-east-1
+          AWS_DEFAULT_REGION: us-east-1
           AMI_NAME: default_webserver
         run: |
-          aws ec2 describe-images --owners self  \
+          image_info=$(aws ec2 describe-images --owners self  \
             --filters Name=name,Values=$AMI_NAME \
-            --query 'Images[*].ImageId' \
-            --output text
-          # if [ -n $image_id]; then
-          #   echo "found."
-          #  # aws ec2 deregister-image --image-id $image_id
-          # else
-          #   echo "No AMIs found."
-          # fi
+            --query 'Images[0].{ImageId: ImageId, SnapshotId: BlockDeviceMappings[0].Ebs.SnapshotId}')
 
-          # cd ${{ github.event.repository.name }}
-          # cd packer
-          # packer init .
-          # packer build .
-          # cat manifest.json
-          # ami_id_val=$(jq -r '(.last_run_uuid as $uid | .builds[] | select(.packer_run_uuid == $uid) | .artifact_id | split(":")[1])' manifest.json)
-          # echo "kek *$ami_id_val*"
-          # echo "ami_id=${ami_id_val}" >> "$GITHUB_OUTPUT"
+          if [ "$image_info" != "null" ]; then
+            image_id=$(echo $image_info | jq -r '.ImageId')
+            snapshot_id=$(echo $image_info| jq -r '.SnapshotId')
+
+            aws ec2 deregister-image --image-id $image_id
+            if [ $? -eq 0 ]; then
+              echo "image $image_id deregistered"
+            fi
+            aws ec2 delete-snapshot --snapshot-id $snapshot_id
+            if [ $? -eq 0 ]; then
+              echo "snapshot $snapshot_id deleted"
+            fi
+          fi
+
+          cd ${{ github.event.repository.name }}
+          cd packer
+          packer init .
+          packer build -var "ami_name=$AMI_NAME" .
+          cat manifest.json
+          ami_id_val=$(jq -r '(.last_run_uuid as $uid | .builds[] | select(.packer_run_uuid == $uid) | .artifact_id | split(":")[1])' manifest.json)
+          echo "kek *$ami_id_val*"
+          echo "ami_id=${ami_id_val}" >> "$GITHUB_OUTPUT"
 
   terraform_deploy:
     name: Terraform Deploy
