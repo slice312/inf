@@ -63,7 +63,7 @@ jobs:
               echo "snapshot $snapshot_id deleted"
             fi
           fi
-
+          # TODO: степ разделить тут
           cd ${{ github.event.repository.name }}
           cd packer
           packer init .

@@ -1,4 +1,4 @@
 variable "ami_name" {
   type    = string
-  default = "default"
+  default = "amazon-linux-sandbox-v0.1"
 }
