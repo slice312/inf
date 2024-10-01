@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - feature/packer-pipeline
+      - feature/*
 
 jobs:
   packer_build:
