@@ -44,6 +44,7 @@ build {
       "sudo dnf install -y telnet",
       "sudo dnf install -y jq",
       # TODO: yaml query yq
+      # TODO: tree
       "sudo dnf install -y httpd",
       "sudo systemctl start httpd",
       "sudo systemctl enable httpd",
@@ -54,6 +55,6 @@ build {
   }
 
   post-processor "manifest" {
-    output     = "manifest.json"
+    output = "manifest.json"
   }
 }
