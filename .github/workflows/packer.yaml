@@ -15,7 +15,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: us-east-1
-      AMI_NAME: amazon-linux-sandbox
+      AMI_NAME: amazon-linux-sandbox-v2
 
     outputs:
       ami_id: ${{ steps.build.outputs.ami_id }}
@@ -71,7 +71,7 @@ jobs:
           cd packer
           packer init .
           packer build -var "ami_name=$AMI_NAME" .
-          cat manifest.json | jq .   # сolorful json
+          cat manifest.json
           ami_id_val=$(jq -r '(.last_run_uuid as $uid | .builds[] | select(.packer_run_uuid == $uid) | .artifact_id | split(":")[1])' manifest.json)
           echo "ami_id=${ami_id_val}" >> "$GITHUB_OUTPUT"
 
