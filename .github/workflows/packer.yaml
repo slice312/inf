@@ -23,7 +23,7 @@ jobs:
     steps:
       - name: сheckout
         run: |
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git@${{gi}}
           pwd
           ls -lah
           cd ${{ github.event.repository.name }}
@@ -48,6 +48,7 @@ jobs:
             --filters Name=name,Values=$AMI_NAME \
             --query 'Images[0].{ImageId: ImageId, SnapshotId: BlockDeviceMappings[0].Ebs.SnapshotId}')
 
+          # TODO: else лог
           if [ "$image_info" != "null" ]; then
             image_id=$(echo $image_info | jq -r '.ImageId')
             snapshot_id=$(echo $image_info| jq -r '.SnapshotId')
@@ -69,7 +70,7 @@ jobs:
           cd packer
           packer init .
           packer build -var "ami_name=$AMI_NAME" .
-          cat manifest.json
+          cat manifest.json | cat jq .   # сolorful json
           ami_id_val=$(jq -r '(.last_run_uuid as $uid | .builds[] | select(.packer_run_uuid == $uid) | .artifact_id | split(":")[1])' manifest.json)
           echo "ami_id=${ami_id_val}" >> "$GITHUB_OUTPUT"
 
@@ -82,7 +83,8 @@ jobs:
     steps:
       - name: сheckout
         run: |
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git \
+            --branch ${{ github.ref }}
           pwd
           ls -lah
           cd ${{ github.event.repository.name }}
