@@ -71,7 +71,7 @@ jobs:
           cd packer
           packer init .
           packer build -var "ami_name=$AMI_NAME" .
-          cat manifest.json | cat jq .   # сolorful json
+          cat manifest.json | jq .   # сolorful json
           ami_id_val=$(jq -r '(.last_run_uuid as $uid | .builds[] | select(.packer_run_uuid == $uid) | .artifact_id | split(":")[1])' manifest.json)
           echo "ami_id=${ami_id_val}" >> "$GITHUB_OUTPUT"
 
