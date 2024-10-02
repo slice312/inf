@@ -24,7 +24,7 @@ jobs:
       - name: сheckout
         run: |
           git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git \
-            --branch ${{ github.ref }}
+            --branch ${{ github.ref_name }}
           pwd
           ls -lah
           cd ${{ github.event.repository.name }}
