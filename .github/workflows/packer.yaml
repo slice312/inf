@@ -23,7 +23,8 @@ jobs:
     steps:
       - name: сheckout
         run: |
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git \
+            --branch ${{ github.ref }}
           pwd
           ls -lah
           cd ${{ github.event.repository.name }}
