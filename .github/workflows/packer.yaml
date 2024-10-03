@@ -28,7 +28,7 @@ jobs:
           pwd
           ls -lah
           cd ${{ github.event.repository.name }}
-          cat samples.yaml
+          cat sample.yaml
           cat sample.yaml | yq .
 
       # - name: Check for Packer changes
