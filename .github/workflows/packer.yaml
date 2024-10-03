@@ -23,8 +23,7 @@ jobs:
     steps:
       - name: сheckout
         run: |
-          jq --verison
-          yq --verison
+          yq
           git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git \
             --branch ${{ github.ref_name }}
           pwd
