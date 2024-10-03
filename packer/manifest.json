@@ -1,14 +1,14 @@
 {
   "builds": [
     {
-      "name": "default_webserver",
+      "name": "amazon-linux-sandbox",
       "builder_type": "amazon-ebs",
-      "build_time": 1727695190,
+      "build_time": 1727879628,
       "files": null,
-      "artifact_id": "us-east-1:ami-0f199b688986c1a54",
-      "packer_run_uuid": "c43fc714-16a7-3a90-0616-92381fcf216e",
+      "artifact_id": "us-east-1:ami-07fd38f876de9bc3d",
+      "packer_run_uuid": "79caed67-faec-6054-180d-baf8c344b5ef",
       "custom_data": null
     }
   ],
-  "last_run_uuid": "c43fc714-16a7-3a90-0616-92381fcf216e"
+  "last_run_uuid": "79caed67-faec-6054-180d-baf8c344b5ef"
 }

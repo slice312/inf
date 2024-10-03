@@ -15,7 +15,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: us-east-1
-      AMI_NAME: amazon-linux-sandbox-v2
+      AMI_NAME: amazon-linux-sandbox
 
     outputs:
       ami_id: ${{ steps.build.outputs.ami_id }}
@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: сheckout
         run: |
+          jq --verison
+          yq --verison
           git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git \
             --branch ${{ github.ref_name }}
           pwd
@@ -45,7 +47,7 @@ jobs:
 
       - name: deregister previous AMI
         run: |
-          image_info=$(aws ec2 describe-images --owners self  \
+          image_info=$(aws ec2 describe-images --owners self \
             --filters Name=name,Values=$AMI_NAME \
             --query 'Images[0].{ImageId: ImageId, SnapshotId: BlockDeviceMappings[0].Ebs.SnapshotId}')
 
