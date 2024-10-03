@@ -23,12 +23,12 @@ jobs:
     steps:
       - name: сheckout
         run: |
-          yq
           git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git \
             --branch ${{ github.ref_name }}
           pwd
           ls -lah
           cd ${{ github.event.repository.name }}
+          cat sample.yaml | yq .git 
 
       # - name: Check for Packer changes
       #   id: changes
