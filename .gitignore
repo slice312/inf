@@ -3,4 +3,6 @@
 
 .terraform/
 
+terraform.tfstate
+
 services/

@@ -34,6 +34,7 @@ data "aws_vpc" "default_west" {
 }
 
 
+
 module "sg_access_to_web_servers_east" {
   source = "./sg_access_to_web_servers"
 
@@ -70,7 +71,6 @@ resource "aws_security_group" "access_to_jumpbox" {
 }
 
 
-
 resource "aws_security_group" "ssh_access_to_web_servers" {
   provider = aws.us_east
   vpc_id   = data.aws_vpc.default_east.id
@@ -90,7 +90,7 @@ resource "aws_instance" "jump_box" {
   provider                    = aws.us_east
   ami                         = var.ami_id
   instance_type               = "t2.micro"
-  associate_public_ip_address = true
+  associate_public_ip_address = false
 
   security_groups = [
     aws_security_group.access_to_jumpbox.name,
@@ -122,6 +122,8 @@ resource "aws_instance" "web_server_1" {
     http_tokens = "required"
   }
 
+  user_data = file("${path.module}/scripts/init-index-html.sh")
+
   tags = {
     Name   = "web_server_1"
     Target = "test-ec2-part1"
@@ -129,11 +131,27 @@ resource "aws_instance" "web_server_1" {
 }
 
 
+data "aws_ami" "ami_source" {
+  filter {
+    name   = "image-id"
+    values = [var.ami_id]
+  }
+}
+
+resource "aws_ami_copy" "ami_west" {
+  name              = data.aws_ami.ami_source.name
+  source_ami_id     = data.aws_ami.ami_source.id
+  source_ami_region = "us-east-1"
+  description       = "AMI copied from us-east-1 to us-west-1"
+
+  provider = aws.us_west
+}
+
 
 
 resource "aws_instance" "web_server_2" {
   provider                    = aws.us_west
-  ami                         = var.ami_id
+  ami                         = aws_ami_copy.ami_west.id
   instance_type               = "t2.micro"
   associate_public_ip_address = true
   key_name                    = module.key_pairs.name_us_west
@@ -143,6 +161,8 @@ resource "aws_instance" "web_server_2" {
   metadata_options {
     http_tokens = "required"
   }
+
+  user_data = file("${path.module}/scripts/init-index-html.sh")
 
   tags = {
     Name = "web_server_2"
