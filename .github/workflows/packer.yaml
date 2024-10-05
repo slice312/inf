@@ -75,6 +75,13 @@ jobs:
           ami_id_val=$(jq -r '(.last_run_uuid as $uid | .builds[] | select(.packer_run_uuid == $uid) | .artifact_id | split(":")[1])' manifest.json)
           echo "ami_id=${ami_id_val}" >> "$GITHUB_OUTPUT"
 
+      # - name: artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: manifest.json
+      #     path:
+
+
   terraform_deploy:
     name: Terraform Deploy
     runs-on: ubuntu-latest
@@ -85,7 +92,7 @@ jobs:
       - name: сheckout
         run: |
           git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git \
-            --branch ${{ github.ref }}
+            --branch ${{ github.ref_name }}
           pwd
           ls -lah
           cd ${{ github.event.repository.name }}
