@@ -132,6 +132,8 @@ resource "aws_instance" "web_server_1" {
 
 
 data "aws_ami" "ami_source" {
+  provider = aws.us_east
+
   filter {
     name   = "image-id"
     values = [var.ami_id]
