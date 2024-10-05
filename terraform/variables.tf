@@ -1,4 +1,4 @@
 variable "ami_id" {
-  description = "AMI id"
+  description = "AMI ID"
   type        = string
 }

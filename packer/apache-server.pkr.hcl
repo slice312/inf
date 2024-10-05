@@ -7,7 +7,7 @@ packer {
   }
 }
 
-source "amazon-ebs" "default_webserver" {
+source "amazon-ebs" "amazon-linux-sandbox" {
   region        = "us-east-1"
   ami_name      = var.ami_name
   instance_type = "t2.micro"
@@ -29,31 +29,24 @@ source "amazon-ebs" "default_webserver" {
 }
 
 build {
-  name = "default_webserver"
+  name = "amazon-linux-sandbox"
   sources = [
-    "source.amazon-ebs.default_webserver"
+    "source.amazon-ebs.amazon-linux-sandbox"
   ]
 
   provisioner "shell" {
     environment_vars = [
       "GREETING=kek",
     ]
-    inline = [
-      # "sudo dnf group install -y 'Development Tools'",
-      # "sudo dnf install -y nc",
-      # "sudo dnf install -y telnet",
-      # "sudo dnf install -y jq",
-      # "sudo dnf install -y httpd",
-      # "sudo systemctl start httpd",
-      # "sudo systemctl enable httpd",
-      # "sudo systemctl status httpd",
-      # "echo '&lt;Region&gt; - &lt;Node #&gt' | sudo tee /var/www/html/index.html > /dev/null",§ qA
-      "echo LOLKEK"
+
+    scripts = [
+      "./scripts/install.sh",
+      "./scripts/configure.sh"
     ]
     expect_disconnect = true
   }
 
   post-processor "manifest" {
-    output     = "manifest.json"
+    output = "manifest.json"
   }
 }

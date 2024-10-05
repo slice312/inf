@@ -1,16 +1,21 @@
-name: Build AMI with Packer
+name: Deploy
 
 on:
   push:
     branches:
       - main
-      - feature/packer-pipeline
+      - feature/*
 
 jobs:
   packer_build:
-    name: Packer Build
+    name: AMI build with Packer
     runs-on: ubuntu-latest
-    environment: dev
+    environment: tmp
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-east-1
+      AMI_NAME: default_webserver_image # amazon-linux-sandbox
 
     outputs:
       ami_id: ${{ steps.build.outputs.ami_id }}
@@ -18,7 +23,8 @@ jobs:
     steps:
       - name: сheckout
         run: |
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git \
+            --branch ${{ github.ref_name }}
           pwd
           ls -lah
           cd ${{ github.event.repository.name }}
@@ -37,19 +43,13 @@ jobs:
       #TODO: добавить возможность пропуска, хз вручную как то, апровы или что еще, придумать короче
         # wokrlfow dipstach с входными параметрами
 
-      - name: build
-        id: build
-        # if: steps.changes.outcome != 'success'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-1
-          AMI_NAME: default_webserver
+      - name: deregister previous AMI
         run: |
-          image_info=$(aws ec2 describe-images --owners self  \
+          image_info=$(aws ec2 describe-images --owners self \
             --filters Name=name,Values=$AMI_NAME \
             --query 'Images[0].{ImageId: ImageId, SnapshotId: BlockDeviceMappings[0].Ebs.SnapshotId}')
 
+          # TODO: else логирование
           if [ "$image_info" != "null" ]; then
             image_id=$(echo $image_info | jq -r '.ImageId')
             snapshot_id=$(echo $image_info| jq -r '.SnapshotId')
@@ -64,6 +64,9 @@ jobs:
             fi
           fi
 
+      - name: build
+        id: build
+        run: |
           cd ${{ github.event.repository.name }}
           cd packer
           packer init .
@@ -72,16 +75,24 @@ jobs:
           ami_id_val=$(jq -r '(.last_run_uuid as $uid | .builds[] | select(.packer_run_uuid == $uid) | .artifact_id | split(":")[1])' manifest.json)
           echo "ami_id=${ami_id_val}" >> "$GITHUB_OUTPUT"
 
+      # - name: artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: manifest.json
+      #     path:
+
+
   terraform_deploy:
     name: Terraform Deploy
     runs-on: ubuntu-latest
-    environment: dev
+    environment: tmp
     needs: packer_build
 
     steps:
       - name: сheckout
         run: |
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git \
+            --branch ${{ github.ref_name }}
           pwd
           ls -lah
           cd ${{ github.event.repository.name }}
@@ -97,6 +108,5 @@ jobs:
           aws sts get-caller-identity --region=us-east-1
 
           terraform init
-          terraform plan -var="ami_id=ami-0d02f4dc282064d6a"
-          # terraform apply -var="ami_id=ami-0d02f4dc282064d6a" -auto-approve
-
+          terraform plan -var="ami_id=${{ needs.packer_build.outputs.ami_id }}"
+          terraform apply -var="ami_id=${{ needs.packer_build.outputs.ami_id }}" -auto-approve

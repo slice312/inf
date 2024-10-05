@@ -1,0 +1,14 @@
+{
+  "builds": [
+    {
+      "name": "amazon-linux-sandbox",
+      "builder_type": "amazon-ebs",
+      "build_time": 1728025626,
+      "files": null,
+      "artifact_id": "us-east-1:ami-03497412185c7e9f5",
+      "packer_run_uuid": "3ba4f35c-847d-0f25-f22f-53e994445300",
+      "custom_data": null
+    }
+  ],
+  "last_run_uuid": "3ba4f35c-847d-0f25-f22f-53e994445300"
+}
